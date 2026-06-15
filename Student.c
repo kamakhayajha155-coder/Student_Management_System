@@ -64,13 +64,7 @@ int main() {
     return 0;
 }
 
-/* ---------- Compute total, percentage and grade ----------
-   This is a "helper" function: it takes a pointer to a Student
-   (so it can directly modify the original, not a copy) and fills
-   in the total/percentage/grade fields based on the marks array.
-   It's called once after entering marks (insertStudent) and again
-   after editing marks (updateStudent), so the result never goes
-   out of sync with the marks. */
+
 void calculateResult(Student *s) {
     int i;
     float sum = 0;
@@ -93,6 +87,7 @@ void calculateResult(Student *s) {
    We check from highest to lowest threshold and use the FIRST
    condition that matches, then copy that grade string into the
    caller's grade array using strcpy(). */
+
 void getGrade(float percentage, char *grade) {
     if (percentage >= 90)      strcpy(grade, "A+");
     else if (percentage >= 80) strcpy(grade, "A");
@@ -120,7 +115,7 @@ void insertStudent(void) {
 
     printf("\nEnter marks for %d subjects (out of 100):\n", NUM_SUBJECTS);
     for (i = 0; i < NUM_SUBJECTS; i++) {
-        printf("%-20s: ", subjectNames[i]);
+        printf("%s/t: ", subjectNames[i]);
         scanf("%f", &s.marks[i]);
     }
 
@@ -155,13 +150,14 @@ void displayStudents(void) {
         return;
     }
 
-    printf("\n%-6s %-20s %-15s %-8s %-10s %-6s\n",
+    printf("\n%s/t %s %s/t %s %s/t %s\n",
            "Roll", "Name", "Course", "Total", "Percent", "Grade");
     printf("--------------------------------------------------------------------\n");
 
     /* fread() reads one Student record at a time.
        It returns 1 on success and 0 when there's nothing left to read,
-       so the loop automatically stops at the end of the file. */
+  so the loop automatically stops at the end of the file. */
+
     while (fread(&s, sizeof(Student), 1, fp) == 1) {
         printf("%-6d %-20s %-15s %-8.2f %-10.2f %-6s\n",
                s.roll, s.name, s.course, s.total, s.percentage, s.grade);
@@ -174,6 +170,7 @@ void displayStudents(void) {
 }
 
 /* ---------- Search a student by roll number ---------- */
+
 void searchStudent(void) {
     Student s;
     int roll, found = 0, i;
@@ -212,8 +209,8 @@ void searchStudent(void) {
 
 /* ---------- Update an existing student record ----------
    "rb+" opens the file for BOTH reading and writing in binary
-   mode, without erasing its contents (unlike "wb"). This lets us
-   read a record, then write a new one in its exact place. */
+   mode, without erasing its contents (unlike "wb"). This lets us read a record, then write a new one in its exact place. */
+
 void updateStudent(void) {
     Student s;
     int roll, found = 0, i;
@@ -234,7 +231,7 @@ void updateStudent(void) {
             printf("Name  : %s\n", s.name);
             printf("Course: %s\n", s.course);
             for (i = 0; i < NUM_SUBJECTS; i++)
-                printf("%-18s: %.2f\n", subjectNames[i], s.marks[i]);
+                printf("%s/t: %.2f\n", subjectNames[i], s.marks[i]);
 
             printf("\nEnter new Name  : ");
             scanf(" %49[^\n]", s.name);
@@ -252,13 +249,15 @@ void updateStudent(void) {
 
             /* --- The "rewind and overwrite" trick ---
                After fread() succeeds, the file pointer has already
-               moved PAST this record (to the start of the next one).
+               moved this record to the start of the next one.
                To overwrite the SAME record with our edited copy, we
                move the pointer BACK by exactly one record's size,
                then fwrite() the updated struct in its place.
                SEEK_CUR means "relative to current position", and a
                negative offset means "move backwards". */
-            fseek(fp, -(long)sizeof(Student), SEEK_CUR);
+
+
+            fseek(fp, (long)sizeof(Student), SEEK_CUR);
             fwrite(&s, sizeof(Student), 1, fp);
 
             printf("\nStudent record updated successfully!\n");
@@ -281,6 +280,7 @@ void updateStudent(void) {
      3. Copy every record EXCEPT the one to delete into temp.dat.
      4. Delete the original file and rename temp.dat to take its place.
    The net effect is that the matching record simply disappears. */
+
 void deleteStudent(void) {
     Student s;
     int roll, found = 0;
@@ -301,7 +301,9 @@ void deleteStudent(void) {
     while (fread(&s, sizeof(Student), 1, fp) == 1) {
         if (s.roll == roll) {
             found = 1;
-            continue; /* Don't write this record to temp.dat -> it's "deleted" */
+            continue; 
+/*we cannot write this record to temp.dat -> it's "deleted" */
+
         }
         fwrite(&s, sizeof(Student), 1, temp); /* keep every other record */
     }
@@ -310,8 +312,12 @@ void deleteStudent(void) {
     fclose(temp);
 
     /* Replace the old file with the filtered one */
-    remove(FILENAME);             /* delete original students.dat  */
-    rename("temp.dat", FILENAME); /* temp.dat becomes students.dat */
+
+    remove(FILENAME);         
+    /* delete original students.dat  */
+
+    rename("temp.dat", FILENAME); 
+/* temp.dat becomes students.dat */
 
     if (found) printf("\nStudent record deleted successfully!\n");
     else        printf("\nStudent with Roll Number %d not found.\n", roll);
